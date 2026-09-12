@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chatbot AI</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#07111f,#10162d,#160d2b);
+    color:white;
+    height:100vh;
+    overflow:hidden;
+}
+
+/* MAIN APP */
+.app{
+    display:flex;
+    height:100vh;
+    width:100%;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:270px;
+    min-width:270px;
+    background:rgba(7,15,30,.95);
+    border-right:1px solid rgba(0,255,255,.15);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    z-index:20;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:25px;
+    color:#00eaff;
+    text-shadow:0 0 15px rgba(0,234,255,.4);
+}
+
+.new-chat{
+    width:100%;
+    border:none;
+    padding:13px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#00d9ff,#7b2cff);
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:22px;
+    transition:.2s;
+}
+
+.new-chat:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 25px rgba(0,217,255,.2);
+}
+
+.history-title{
+    color:#9ca9c7;
+    font-size:13px;
+    margin-bottom:10px;
+}
+
+.history{
+    flex:1;
+    overflow-y:auto;
+}
+
+.history-item{
+    padding:11px 12px;
+    border-radius:9px;
+    margin-bottom:7px;
+    background:rgba(255,255,255,.04);
+    cursor:pointer;
+    color:#dce5ff;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+}
+
+.history-item:hover{
+    background:rgba(0,234,255,.1);
+}
+
+.history-text{
+    flex:1;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.delete-chat{
+    border:none;
+    background:transparent;
+    color:#ff6b6b;
+    cursor:pointer;
+    font-size:14px;
+    padding:3px 5px;
+    border-radius:6px;
+    flex-shrink:0;
+}
+
+.delete-chat:hover{
+    background:rgba(255,80,80,.12);
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+}
+
+/* TOP BAR */
+.topbar{
+    height:65px;
+    min-height:65px;
+    display:flex;
+    align-items:center;
+    padding:0 22px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    background:rgba(8,15,30,.55);
+    backdrop-filter:blur(10px);
+}
+
+.menu-btn{
+    display:none;
+    border:none;
+    background:rgba(255,255,255,.08);
+    color:white;
+    font-size:22px;
+    padding:7px 11px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-right:12px;
+}
+
+.top-title{
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* CHAT AREA */
+.chat-area{
+    flex:1;
+    overflow-y:auto;
+    padding:30px 20px 20px;
+    scroll-behavior:smooth;
+}
+
+.chat-container{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+}
+
+/* WELCOME */
+.welcome{
+    text-align:center;
+    margin-top:70px;
+    padding:20px;
+}
+
+.welcome-icon{
+    width:75px;
+    height:75px;
+    border-radius:22px;
+    margin:0 auto 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:35px;
+    background:linear-gradient(135deg,#00eaff,#792cff);
+    box-shadow:0 0 35px rgba(0,234,255,.2);
+}
+
+.welcome h1{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.welcome p{
+    color:#aab6d3;
+    font-size:15px;
+}
+
+/* MESSAGES */
+.message{
+    display:flex;
+    margin-bottom:22px;
+    width:100%;
+}
+
+.message.user{
+    justify-content:flex-end;
+}
+
+.message.bot{
+    justify-content:flex-start;
+}
+
+/* QUESTION BOX - COMPACT */
+.message-bubble{
+    max-width:75%;
+    padding:12px 16px;
+    border-radius:16px;
+    line-height:1.55;
+    font-size:15px;
+    word-wrap:break-word;
+}
+
+/* USER QUESTION */
+.user .message-bubble{
+    background:linear-gradient(135deg,#087eff,#6236ff);
+    border-bottom-right-radius:5px;
+    box-shadow:0 5px 18px rgba(47,112,255,.18);
+    color:white;
+}
+
+/* BOT ANSWER */
+.bot .message-bubble{
+    max-width:85%;
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.08);
+    border-bottom-left-radius:5px;
+    color:#e9efff;
+}
+
+/* ANSWER TITLE */
+.answer-title{
+    color:#00eaff;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+/* TYPING */
+.typing{
+    display:flex;
+    gap:5px;
+    align-items:center;
+    padding:5px 0;
+}
+
+.dot{
+    width:7px;
+    height:7px;
+    background:#00eaff;
+    border-radius:50%;
+    animation:blink 1.2s infinite;
+}
+
+.dot:nth-child(2){
+    animation-delay:.2s;
+}
+
+.dot:nth-child(3){
+    animation-delay:.4s;
+}
+
+@keyframes blink{
+    0%,80%,100%{
+        opacity:.2;
+    }
+    40%{
+        opacity:1;
+    }
+}
+
+/* SUGGESTIONS */
+.suggestions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:20px;
+    justify-content:center;
+}
+
+.suggestion{
+    padding:9px 13px;
+    border-radius:20px;
+    border:1px solid rgba(0,234,255,.2);
+    background:rgba(0,234,255,.05);
+    color:#bdefff;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.suggestion:hover{
+    background:rgba(0,234,255,.12);
+}
+
+/* INPUT AREA */
+.input-area{
+    padding:14px 20px 18px;
+    background:linear-gradient(
+        to top,
+        rgba(7,13,26,1),
+        rgba(7,13,26,.92),
+        transparent
+    );
+}
+
+.input-container{
+    max-width:900px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:7px;
+    border-radius:15px;
+    background:rgba(255,255,255,.07);
+    border:1px solid rgba(0,234,255,.16);
+}
+
+.input-container input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    color:white;
+    padding:12px;
+    font-size:15px;
+}
+
+.input-container input::placeholder{
+    color:#75819e;
+}
+
+.send-btn{
+    width:45px;
+    height:45px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#00d9ff,#712cff);
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    flex-shrink:0;
+}
+
+.send-btn:hover{
+    transform:scale(1.04);
+}
+
+/* MOBILE OVERLAY */
+.overlay{
+    display:none;
+}
+
+/* TABLET */
+@media(max-width:900px){
+
+    .sidebar{
+        width:230px;
+        min-width:230px;
+    }
+
+    .message-bubble{
+        max-width:82%;
+    }
+
+    .bot .message-bubble{
+        max-width:90%;
+    }
+}
+
+/* MOBILE */
+@media(max-width:700px){
+
+    body{
+        overflow:hidden;
+    }
+
+    .sidebar{
+        position:fixed;
+        left:-280px;
+        top:0;
+        bottom:0;
+        width:270px;
+        min-width:270px;
+        transition:.25s;
+    }
+
+    .sidebar.open{
+        left:0;
+    }
+
+    .overlay{
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.55);
+        z-index:10;
+    }
+
+    .overlay.show{
+        display:block;
+    }
+
+    .menu-btn{
+        display:block;
+    }
+
+    .topbar{
+        padding:0 12px;
+    }
+
+    .chat-area{
+        padding:20px 12px 12px;
+    }
+
+    .welcome{
+        margin-top:35px;
+    }
+
+    .welcome h1{
+        font-size:25px;
+    }
+
+    .welcome p{
+        font-size:14px;
+    }
+
+    .message{
+        margin-bottom:16px;
+    }
+
+    .message-bubble,
+    .user .message-bubble,
+    .bot .message-bubble{
+        max-width:90%;
+        font-size:14px;
+        padding:10px 13px;
+    }
+
+    .input-area{
+        padding:8px 10px 12px;
+    }
+
+    .input-container{
+        padding:5px;
+    }
+
+    .input-container input{
+        padding:10px 8px;
+        font-size:14px;
+    }
+
+    .send-btn{
+        width:42px;
+        height:42px;
+    }
+
+    .suggestions{
+        gap:6px;
+    }
+
+    .suggestion{
+        font-size:12px;
+        padding:7px 10px;
+    }
+}
+
+/* VERY SMALL MOBILE */
+@media(max-width:400px){
+
+    .message-bubble,
+    .user .message-bubble,
+    .bot .message-bubble{
+        max-width:94%;
+    }
+
+    .welcome h1{
+        font-size:22px;
+    }
+
+    .logo{
+        font-size:21px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+            ✦ Chatbot AI
+        </div>
+
+        <button class="new-chat" onclick="newChat()">
+            ＋ New Chat
+        </button>
+
+        <div class="history-title">
+            CHAT HISTORY
+        </div>
+
+        <div class="history" id="history"></div>
+
+    </aside>
+
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <header class="topbar">
+
+            <button class="menu-btn" onclick="openSidebar()">
+                ☰
+            </button>
+
+            <div class="top-title">
+                Chatbot AI
+            </div>
+
+        </header>
+
+        <!-- CHAT -->
+        <section class="chat-area" id="chatArea">
+
+            <div class="chat-container" id="chatContainer">
+
+                <div class="welcome" id="welcome">
+
+                    <div class="welcome-icon">
+                        ✦
+                    </div>
+
+                    <h1>How can I help you?</h1>
+
+                    <div class="suggestions">
+
+                        <button class="suggestion"
+                            onclick="useSuggestion('What is science?')">
+                            What is science?
+                        </button>
+
+                        <button class="suggestion"
+                            onclick="useSuggestion('What is artificial intelligence?')">
+                            What is AI?
+                        </button>
+
+                        <button class="suggestion"
+                            onclick="useSuggestion('What is computer science?')">
+                            Computer Science
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- INPUT -->
+        <div class="input-area">
+
+            <div class="input-container">
+
+                <input
+                    type="text"
+                    id="questionInput"
+                    placeholder="Ask anything..."
+                    autocomplete="off"
+                >
+
+                <button class="send-btn" onclick="sendQuestion()">
+                    ➤
+                </button>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+/* =========================================
+   CHAT DATA
+========================================= */
+
+let chats = JSON.parse(
+    localStorage.getItem("unibot_chats") || "[]"
+);
+
+let currentChatId = null;
+
+
+/* =========================================
+   START
+========================================= */
+
+function startApp(){
+
+    if(chats.length > 0){
+
+        currentChatId = chats[0].id;
+
+        renderHistory();
+        loadChat(currentChatId);
+
+    }else{
+
+        newChat();
+
+    }
+
+}
+
+
+/* =========================================
+   NEW CHAT
+========================================= */
+
+function newChat(){
+
+    const chat = {
+
+        id:Date.now(),
+
+        title:"New Chat",
+
+        messages:[]
+
+    };
+
+    chats.unshift(chat);
+
+    currentChatId = chat.id;
+
+    saveChats();
+
+    renderHistory();
+
+    renderMessages();
+
+    closeSidebar();
+
+}
+
+
+/* =========================================
+   SAVE
+========================================= */
+
+function saveChats(){
+
+    localStorage.setItem(
+        "unibot_chats",
+        JSON.stringify(chats)
+    );
+
+}
+
+
+/* =========================================
+   HISTORY
+========================================= */
+
+function renderHistory(){
+
+    const history =
+        document.getElementById("history");
+
+    history.innerHTML = "";
+
+    chats.forEach(chat => {
+
+        const item =
+            document.createElement("div");
+
+        item.className = "history-item";
+
+
+        const title =
+            document.createElement("div");
+
+        title.className = "history-text";
+
+        title.textContent =
+            chat.title || "New Chat";
+
+
+        const deleteBtn =
+            document.createElement("button");
+
+        deleteBtn.className =
+            "delete-chat";
+
+        deleteBtn.innerHTML =
+            "🗑️";
+
+        deleteBtn.title =
+            "Delete chat";
+
+
+        deleteBtn.onclick = (event) => {
+
+            event.stopPropagation();
+
+            deleteChat(chat.id);
+
+        };
+
+
+        item.onclick = () => {
+
+            currentChatId = chat.id;
+
+            loadChat(chat.id);
+
+            closeSidebar();
+
+        };
+
+
+        item.appendChild(title);
+
+        item.appendChild(deleteBtn);
+
+        history.appendChild(item);
+
+    });
+
+}
+
+
+/* =========================================
+   DELETE CHAT
+========================================= */
+
+function deleteChat(id){
+
+    chats =
+        chats.filter(chat => chat.id !== id);
+
+
+    if(chats.length === 0){
+
+        saveChats();
+
+        currentChatId = null;
+
+        newChat();
+
+        return;
+
+    }
+
+
+    if(currentChatId === id){
+
+        currentChatId =
+            chats[0].id;
+
+    }
+
+
+    saveChats();
+
+    renderHistory();
+
+    renderMessages();
+
+}
+
+
+/* =========================================
+   LOAD CHAT
+========================================= */
+
+function loadChat(id){
+
+    currentChatId = id;
+
+    renderMessages();
+
+}
+
+
+/* =========================================
+   RENDER MESSAGES
+========================================= */
+
+function renderMessages(){
+
+    const container =
+        document.getElementById("chatContainer");
+
+    const chat =
+        chats.find(c => c.id === currentChatId);
+
+    container.innerHTML = "";
+
+    if(!chat || chat.messages.length === 0){
+
+        container.innerHTML = `
+
+            <div class="welcome">
+
+                <div class="welcome-icon">
+                    ✦
+                </div>
+
+                <h1>How can I help you?</h1>
+
+                <div class="suggestions">
+
+                    <button class="suggestion"
+                    onclick="useSuggestion('What is science?')">
+                    What is science?
+                    </button>
+
+                    <button class="suggestion"
+                    onclick="useSuggestion('What is artificial intelligence?')">
+                    What is AI?
+                    </button>
+
+                    <button class="suggestion"
+                    onclick="useSuggestion('What is computer science?')">
+                    Computer Science
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    chat.messages.forEach(message => {
+
+        addMessageToScreen(
+            message.type,
+            message.text
+        );
+
+    });
+
+    scrollBottom();
+
+}
+
+
+/* =========================================
+   ADD MESSAGE
+========================================= */
+
+function addMessageToScreen(type,text){
+
+    const container =
+        document.getElementById("chatContainer");
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "message " + type;
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "message-bubble";
+
+
+    if(type === "bot"){
+
+        bubble.innerHTML = `
+            <div class="answer-title">
+                Chatbot AI
+            </div>
+            ${escapeHTML(text).replace(/\n/g,"<br>")}
+        `;
+
+    }else{
+
+        bubble.textContent = text;
+
+    }
+
+
+    message.appendChild(bubble);
+
+    container.appendChild(message);
+
+}
+
+
+/* =========================================
+   SEND QUESTION
+========================================= */
+
+async function sendQuestion(){
+
+    const input =
+        document.getElementById("questionInput");
+
+    const question =
+        input.value.trim();
+
+    if(!question) return;
+
+
+    const chat =
+        chats.find(c => c.id === currentChatId);
+
+    if(!chat) return;
+
+
+    /* ADD USER MESSAGE */
+
+    chat.messages.push({
+
+        type:"user",
+
+        text:question
+
+    });
+
+
+    /* CHAT TITLE */
+
+    if(chat.title === "New Chat"){
+
+        chat.title =
+            question.length > 30
+            ? question.substring(0,30) + "..."
+            : question;
+
+    }
+
+
+    input.value = "";
+
+    saveChats();
+
+    renderHistory();
+
+    renderMessages();
+
+    showTyping();
+
+    scrollBottom();
+
+
+    try{
+
+        const answer =
+            await searchWikipedia(question);
+
+        removeTyping();
+
+
+        chat.messages.push({
+
+            type:"bot",
+
+            text:answer
+
+        });
+
+
+        saveChats();
+
+        renderMessages();
+
+        scrollBottom();
+
+
+    }catch(error){
+
+        removeTyping();
+
+
+        const errorMessage =
+            "Sorry, I couldn't find a good answer for this question. Please try asking the question in a simpler way.";
+
+
+        chat.messages.push({
+
+            type:"bot",
+
+            text:errorMessage
+
+        });
+
+
+        saveChats();
+
+        renderMessages();
+
+    }
+
+}
+
+
+/* =========================================
+   WIKIPEDIA SEARCH
+========================================= */
+
+async function searchWikipedia(question){
+
+    /*
+       First clean the question.
+
+       Example:
+       "What is this thing called science?"
+       becomes:
+       "science"
+
+       "What is artificial intelligence?"
+       becomes:
+       "artificial intelligence"
+    */
+
+    let searchTerm =
+        cleanQuestion(question);
+
+
+    /* SEARCH WIKIPEDIA */
+
+    const searchURL =
+        "https://en.wikipedia.org/w/api.php?" +
+
+        new URLSearchParams({
+
+            action:"query",
+
+            list:"search",
+
+            srsearch:searchTerm,
+
+            srlimit:"5",
+
+            srprop:"snippet",
+
+            format:"json",
+
+            origin:"*"
+
+        });
+
+
+    const response =
+        await fetch(searchURL);
+
+
+    if(!response.ok){
+
+        throw new Error("Wikipedia search failed");
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if(
+        !data.query ||
+        !data.query.search ||
+        data.query.search.length === 0
+    ){
+
+        return "I couldn't find reliable information about that topic on Wikipedia.";
+
+    }
+
+
+    /*
+       Try several search results until
+       we find a useful summary.
+    */
+
+    for(const result of data.query.search){
+
+        const title =
+            result.title;
+
+
+        try{
+
+            const summaryURL =
+                "https://en.wikipedia.org/api/rest_v1/page/summary/" +
+
+                encodeURIComponent(title);
+
+
+            const summaryResponse =
+                await fetch(summaryURL);
+
+
+            if(!summaryResponse.ok){
+
+                continue;
+
+            }
+
+
+            const summary =
+                await summaryResponse.json();
+
+
+            if(
+                summary.extract &&
+                summary.extract.length > 30
+            ){
+
+                return makeAnswer(
+                    question,
+                    summary.extract
+                );
+
+            }
+
+        }catch(error){
+
+            continue;
+
+        }
+
+    }
+
+
+    return "I found the topic on Wikipedia, but I couldn't get a suitable explanation. Please try asking the question in a simpler way.";
+
+}
+
+
+/* =========================================
+   CLEAN QUESTION
+========================================= */
+
+function cleanQuestion(question){
+
+    let q =
+        question.toLowerCase().trim();
+
+
+    /*
+       Definition questions
+    */
+
+    const patterns = [
+
+        /^what is (?:this thing called )?(.+?)\??$/i,
+
+        /^what are (.+?)\??$/i,
+
+        /^who is (.+?)\??$/i,
+
+        /^who was (.+?)\??$/i,
+
+        /^define (.+?)\??$/i,
+
+        /^explain (.+?)\??$/i,
+
+        /^tell me about (.+?)\??$/i,
+
+        /^information about (.+?)\??$/i
+
+    ];
+
+
+    for(const pattern of patterns){
+
+        const match =
+            q.match(pattern);
+
+
+        if(match && match[1]){
+
+            let topic =
+                match[1]
+                .trim()
+                .replace(/[?.!]+$/,"");
+
+
+            /*
+               Remove unnecessary words
+            */
+
+            topic =
+                topic
+                .replace(/^the /,"")
+                .trim();
+
+
+            if(topic.length > 1){
+
+                return topic;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+       If it isn't a definition question,
+       search the complete question.
+    */
+
+    return question.trim();
+
+}
+
+
+/* =========================================
+   MAKE BETTER ANSWER
+========================================= */
+
+function makeAnswer(question,extract){
+
+    /*
+       Remove unnecessary Wikipedia wording
+       and make the answer cleaner.
+    */
+
+    let answer =
+        extract.trim();
+
+
+    /*
+       If answer is extremely long,
+       show a reasonable amount.
+    */
+
+    if(answer.length > 1200){
+
+        answer =
+            answer.substring(0,1200) + "...";
+
+    }
+
+
+    return answer;
+
+}
+
+
+/* =========================================
+   TYPING
+========================================= */
+
+function showTyping(){
+
+    const container =
+        document.getElementById("chatContainer");
+
+
+    const typing =
+        document.createElement("div");
+
+
+    typing.className =
+        "message bot";
+
+
+    typing.id =
+        "typingMessage";
+
+
+    typing.innerHTML = `
+
+        <div class="message-bubble">
+
+            <div class="typing">
+
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(typing);
+
+    scrollBottom();
+
+}
+
+
+function removeTyping(){
+
+    const typing =
+        document.getElementById("typingMessage");
+
+
+    if(typing){
+
+        typing.remove();
+
+    }
+
+}
+
+
+/* =========================================
+   SUGGESTION
+========================================= */
+
+function useSuggestion(text){
+
+    const input =
+        document.getElementById("questionInput");
+
+    input.value = text;
+
+    sendQuestion();
+
+}
+
+
+/* =========================================
+   ENTER KEY
+========================================= */
+
+document
+.getElementById("questionInput")
+.addEventListener("keydown",function(event){
+
+    if(event.key === "Enter"){
+
+        event.preventDefault();
+
+        sendQuestion();
+
+    }
+
+});
+
+
+/* =========================================
+   MOBILE SIDEBAR
+========================================= */
+
+function openSidebar(){
+
+    document
+    .getElementById("sidebar")
+    .classList.add("open");
+
+
+    document
+    .getElementById("overlay")
+    .classList.add("show");
+
+}
+
+
+function closeSidebar(){
+
+    document
+    .getElementById("sidebar")
+    .classList.remove("open");
+
+
+    document
+    .getElementById("overlay")
+    .classList.remove("show");
+
+}
+
+
+/* =========================================
+   SCROLL
+========================================= */
+
+function scrollBottom(){
+
+    const area =
+        document.getElementById("chatArea");
+
+
+    setTimeout(() => {
+
+        area.scrollTop =
+            area.scrollHeight;
+
+    },50);
+
+}
+
+
+/* =========================================
+   SECURITY
+========================================= */
+
+function escapeHTML(text){
+
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        text;
+
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   START APP
+========================================= */
+
+startApp();
+
+</script>
+
+</body>
+</html>
